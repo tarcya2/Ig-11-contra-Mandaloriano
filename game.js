@@ -122,12 +122,12 @@ function hitPlayer(player, bullet){
 }
 
 function shootBulletPlayer(scene){
-    const bulletPlayer = playerBullets.create(player.x, enemy.y, "playerBullet")
-    bullet.setScale(0.2)
-    bullet.body.allowGravity = false;
-    bullet.setVelocityX(400);
+    const bulletPlayer = playerBullets.create(player.x, player.y, "playerBullet")
+    bulletPlayer.setScale(0.15)
+    bulletPlayer.body.allowGravity = false;
+    bulletPlayer.setVelocityX(400);
 }
-function hitEnemy(bullett, enemy){
+function hitEnemy(bullet, enemy){
     bullet.destroy();
 
 }
