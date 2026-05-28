@@ -22,7 +22,8 @@ let player;
 let cursors;
 let enemy;
 let bullets;
-let playerBullets
+let playerBullets;
+let enemyLife = 5;
 
 function preload(){
     // Carregar uma imagem (sprite do personagem)
@@ -44,12 +45,13 @@ function create(){
 
     // Adicionando o inimigo ao jogo com física ativada
     enemy = this.physics.add.sprite(1500, 300, 'enemy');
-
     // Reduzindo o tamanho do inimigo para 50% (0.5x)
     enemy.setScale(0.5);
-
+    enemy.life = 5;
      // Colisão do inimigo
     enemy.setCollideWorldBounds(true);
+    enemy.setImmovable(true);
+    enemy.body.allowGravity = false;
     enemy.setBounce(1);
 
     enemy.setVelocityY(550);
@@ -61,6 +63,8 @@ function create(){
         callbackScope: this,
         loop: true,
     })
+
+    
 
     this.physics.add.overlap(player, bullets, hitPlayer, null, this);
 
@@ -77,8 +81,7 @@ function create(){
         playerBullets,
         enemy,
         hitEnemy,
-        null,
-        this);
+    );
 
     // Criando controles de teclado
     cursors = this.input.keyboard.createCursorKeys();
@@ -106,6 +109,9 @@ function update(){
 }
 
 function shootBullet(){
+    if (!enemy.active){
+        return;
+    }
     let bullet = bullets.create(enemy.x -50, enemy.y, "enemyBullet");
     bullet.setScale(0.2)
     bullet.body.allowGravity = false;
@@ -125,9 +131,26 @@ function shootBulletPlayer(scene){
     const bulletPlayer = playerBullets.create(player.x, player.y, "playerBullet")
     bulletPlayer.setScale(0.15)
     bulletPlayer.body.allowGravity = false;
+    bulletPlayer.body.immovable = true;
     bulletPlayer.setVelocityX(400);
 }
-function hitEnemy(bullet, enemy){
-    bullet.destroy();
+function hitEnemy(bullet){
+    //bullet.destroy();
+    bullet.disableBody(true, true)
+    enemy.life--;
+    console.log ("Vida do Inimigo:", enemy.life);
+    /*
+    enemy.setTint(0xff0000);
+    enemy.scene.time.delayedCall(100, () => {
+        if (enemy.active){
+            enemy.clearTint();
+        }
+        
+    });
+*/
+    if (enemyLife <= 0){
+        enemy.destroy();
+        console.log("Inimigo Derrotado!")   
+    }
 
 }
