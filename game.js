@@ -2,6 +2,9 @@ const config = {
     type: Phaser.AUTO,
     width: 1820, 
     height: 900,
+    scale: {
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     physics: {
         default: "arcade",
         arcade: {
@@ -23,7 +26,13 @@ let cursors;
 let enemy;
 let bullets;
 let playerBullets;
-let enemyLife = 5;
+let playerLifes = 3;
+let gameOver = false;
+let score = 0;
+let scoreText;
+let lifeText;
+let enemyLifeText;
+let endText;
 
 function preload(){
     // Carregar uma imagem (sprite do personagem)
@@ -89,9 +98,20 @@ function create(){
     keySpace = this.input.keyboard.addKey(
         Phaser.Input.Keyboard.KeyCodes.SPACE
     )
+    scoreText = this.add.text(20, 20, "score: 0", {fontSize: "32px", color: "#ffffff"})
+    lifeText = this.add.text(20, 60, "life: 3", {fontSize: "32px", color: "#ffffff"})
+    enemyLifeText = this.add.text(1550, 20, "enemy life: "+ enemy.life, {fontSize: "32px", color: "#ffffff"})
+    endText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, "",{fontSize: "64px", color: "#e9e913", fontStyle: "bold"});
+    endText.setOrigin(0.5);
 }
 
 function update(){
+    if (gameOver){
+        return;
+    }
+    if(!player.active){
+        return;
+    }
     // Movimentação do personagem
     if (cursors.up.isDown) {
         player.y -= 3;
@@ -109,6 +129,9 @@ function update(){
 }
 
 function shootBullet(){
+    if (gameOver){
+        return;
+    }
     if (!enemy.active){
         return;
     }
@@ -120,26 +143,44 @@ function shootBullet(){
 
 function hitPlayer(player, bullet){
     bullet.destroy();
+    playerLifes--;
+    lifeText.setText("life: "+ playerLifes);
+    console.log("Vidas do Jogador", playerLifes);
     player.setTint(0xff0000);
     console.log("Jogador atingido!!")
     setTimeout(() => {
         player.clearTint();
-    }, 200)
+    }, 200);
+    if (playerLifes <= 0){
+        gameOver = true;
+        enemy.setVelocity(0, 0);
+        enemy.body.enable = false;
+        player.disableBody(true, true);
+        console.log("Game Over");
+        endText.setText("Game Over!");
+    }
 }
 
 function shootBulletPlayer(scene){
+    if (!player.active){
+        return;
+    }
     const bulletPlayer = playerBullets.create(player.x, player.y, "playerBullet")
     bulletPlayer.setScale(0.15)
     bulletPlayer.body.allowGravity = false;
     bulletPlayer.body.immovable = true;
     bulletPlayer.setVelocityX(400);
 }
-function hitEnemy(bullet){
+function hitEnemy(ememy, bullet){
+
     //bullet.destroy();
     bullet.disableBody(true, true)
     enemy.life--;
+    enemyLifeText.setText("enemy life: "+ enemy.life);
+    score += 10;
+    scoreText.setText("score: "+score);
     console.log ("Vida do Inimigo:", enemy.life);
-    /*
+    
     enemy.setTint(0xff0000);
     enemy.scene.time.delayedCall(100, () => {
         if (enemy.active){
@@ -147,10 +188,11 @@ function hitEnemy(bullet){
         }
         
     });
-*/
-    if (enemyLife <= 0){
+
+    if (enemy.life <= 0){
         enemy.destroy();
-        console.log("Inimigo Derrotado!")   
+        console.log("Inimigo Derrotado!")  
+         endText.setText("You Win!"); 
     }
 
 }
